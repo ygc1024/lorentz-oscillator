@@ -1,3 +1,10 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Fox, Optical Properties of Solids §2.2.1 그림 2.4를 직접 그려보는 Lorentz 진동자 실습 웹앱. ε₁, ε₂, n, κ와 빛의 반사·흡수·투과를 한 화면에서.">
+<meta name="color-scheme" content="light dark">
 <title>Lorentz 진동자 — 그림 2.4 실습</title>
 <style>
 /* ── tokens ─────────────────────────────────────────────────────────── */
@@ -192,6 +199,8 @@ footer{
 .btn:hover{border-color:var(--accent); color:var(--ink)}
 @media (prefers-reduced-motion:reduce){ *{transition:none !important} }
 </style>
+</head>
+<body>
 
 <div class="wrap">
 <header>
@@ -1003,3 +1012,5 @@ window.matchMedia('(prefers-color-scheme:dark)').addEventListener('change',rende
 new MutationObserver(render).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
 })();
 </script>
+</body>
+</html>

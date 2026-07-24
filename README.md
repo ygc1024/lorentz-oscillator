@@ -22,12 +22,35 @@ Mark Fox, *Optical Properties of Solids* (Oxford, 2nd ed. 2010) **§2.2.1 그림
 - **유리의 자외선 공명** — 공명에서 멀리 떨어진 투명 영역의 분산
 - **아주 센 진동자** — 금속에 가까운 넓은 반사띠
 
+## 비교 도구
+
+파라미터를 움직이면 축이 자동으로 다시 맞춰져 변화가 눈에 안 들어오는 문제를 세 가지로 푼다.
+
+- **축 고정** — 지금의 x·y 눈금을 붙박는다. γ를 키우면 봉우리가 실제로 내려앉는 것이 보인다.
+- **기준 곡선 저장** — 지금 곡선을 점선으로 남겨 바뀐 곡선과 겹쳐 본다.
+- **두 번째 공명** — 이웃한 공명을 하나 더 놓으면(식 2.23) 옆 봉우리가 자 노릇을 한다.
+
 ## 쓰는 법
 
 `index.html`을 브라우저에서 그냥 열면 된다. 빌드도, 서버도, 외부 의존성도 없다.
 설정은 주소의 `#` 뒤에 저장되므로, 특정 상태를 그대로 링크로 공유할 수 있다.
 
-배포본: <https://claude.ai/code/artifact/8fcf32da-6678-45af-a64c-80e06ce3e3c0>
+**공개 링크:** <https://ygc1024.github.io/lorentz-oscillator/>
 
-> 참고: 이 파일은 `<html>`/`<head>`/`<body>` 태그 없이 조각(fragment) 형태로 작성되어 있다.
-> 브라우저가 자동으로 감싸주므로 로컬에서 열어도 정상 동작하고, Artifact로 게시할 때도 그대로 쓰인다.
+## Artifact 배포본 만들기
+
+Claude Artifact는 파일을 `<!doctype html><head></head><body>` 안에 감싸므로 조각(fragment)을 넘겨야 한다.
+`index.html`을 직접 고치고, 게시 직전에 아래를 돌려 `artifact.html`을 새로 만든다 (git에는 넣지 않는다).
+
+```
+node build-artifact.mjs
+```
+
+## 라이선스
+
+© 2026 Young-Gwan Choi. 이 저작물은 [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/deed.ko)
+조건으로 이용할 수 있다 — 출처를 밝히면 비영리 교육 목적으로 자유롭게 쓰고 고칠 수 있으며,
+상업적 이용은 별도 허락이 필요하다.
+
+물리 모형과 그림 2.4의 구성은 M. Fox, *Optical Properties of Solids* 2nd ed. (Oxford Univ. Press, 2010)
+§2.2.1을 따랐다. 해당 교재의 저작권은 원 저작권자에게 있다.

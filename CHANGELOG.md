@@ -3,6 +3,19 @@
 작업 단위(버전)별 변경사항을 기록합니다. 최신 버전이 맨 위에 옵니다.
 형식: 유의적 버전 vMAJOR.MINOR.PATCH. 각 버전은 git 태그로 남깁니다.
 
+## [v1.1.1] - 2026-07-24
+### 수정
+- `index.html`을 완전한 HTML 문서로 변경 (doctype, `<html lang="ko">`, charset, **viewport**).
+  viewport 메타가 없으면 휴대폰에서 980px 폭으로 축소 렌더링되는 문제가 있었다.
+  표준 모드(CSS1Compat) 렌더링도 확보.
+### 추가
+- `build-artifact.mjs` — Artifact 게시용 조각 파일(`artifact.html`) 생성 스크립트.
+  `index.html` 하나만 손대고 배포본은 생성해서 쓴다. `artifact.html`은 git 제외.
+- README에 공개 링크·비교 도구·라이선스 항목 추가.
+
+- 변경 파일: `index.html`, `build-artifact.mjs`, `README.md`, `.gitignore`
+- 이전 버전: v1.1.0
+
 ## [v1.1.0] - 2026-07-24
 ### 추가
 - **축 고정** — 현재 x축·y축 눈금을 붙박아, 파라미터를 바꿔도 축이 다시 맞춰지지 않게 함.

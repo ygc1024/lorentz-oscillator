@@ -1,5 +1,6 @@
 _versions/
 reports/
+artifact.html
 node_modules/
 dist/
 .env
