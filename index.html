@@ -340,7 +340,7 @@ footer{
           </div>
         </div>
         <div class="pan" style="display:flex; flex-direction:column">
-          <svg id="beam" viewBox="0 0 300 214" preserveAspectRatio="xMidYMid meet" aria-label="커서 진동수에서의 빛 경로 도식"></svg>
+          <svg id="beam" viewBox="0 0 300 222" preserveAspectRatio="xMidYMid meet" aria-label="커서 진동수에서의 빛 경로 도식"></svg>
         </div>
       </div>
     </div>
@@ -786,7 +786,8 @@ function detuneMode(){ const xr=range(); return !S.two && (xr[1]-xr[0]) < 0.1*S.
 function drawBeam(o){
   const svg=document.getElementById('beam');
   const H=40, x0=10, xf=116, xb=184, x1=290, cy=100, yR=cy-H/2-32;
-  const hR=Math.max(0.8,H*o.R), hT=Math.max(0.8,H*o.T), hIn=Math.max(0,H*(1-o.R));
+  const hTraw=H*o.T;   // 화살표용 최소 굵기를 씌우지 않은 실제 높이 — 감쇠 판정에 쓴다
+  const hR=Math.max(0.8,H*o.R), hT=Math.max(0.8,hTraw), hIn=Math.max(0,H*(1-o.R));
   const s1=css('--s1'), s2=css('--s2'), s3=css('--s3'), ink=css('--ink2'), mut=css('--muted');
   const F='font-family="system-ui,Malgun Gothic,sans-serif"';
   const slabFill=isDark()?'rgba(219,108,66,'+(0.05+0.30*o.A)+')':'rgba(193,70,31,'+(0.04+0.24*o.A)+')';
@@ -801,10 +802,28 @@ function drawBeam(o){
   g.push('<path d="M '+xf+' '+(cy-H/2)+' L '+(xf-28)+' '+(yR+hR)+' L '+x0+' '+(yR+hR)+' L '+x0+' '+yR+' L '+(xf-28)+' '+yR+' Z" fill="'+s1+'" opacity=".9"/>');
   g.push('<path d="M '+(x0+14)+' '+yR+' l 0 '+hR+' l -13 '+(-hR/2)+' Z" fill="'+s1+'"/>');
   g.push('<text x="'+x0+'" y="'+(yR-7)+'" font-size="10.5" fill="'+s1+'" '+F+' font-weight="600">반사 '+pct(o.R)+'</text>');
-  // 시료 안 — 들어간 빔이 얇아지고, 남은 쐐기가 흡수
+  // 시료 안 — Beer 법칙 exp(−αz)로 빔이 잦아든다. 주황 영역(= 봉투와 빔의 차이)이 흡수량.
   if(hIn>0.4){
-    g.push('<path d="M '+xf+' '+(cy-hIn/2)+' L '+xb+' '+(cy-hT/2)+' L '+xb+' '+(cy+hT/2)+' L '+xf+' '+(cy+hIn/2)+' Z" fill="'+s2+'" opacity=".85"/>');
-    g.push('<rect x="'+xf+'" y="'+(cy-hT/2)+'" width="'+(xb-xf)+'" height="'+hT+'" fill="'+s3+'" opacity=".92"/>');
+    g.push('<rect x="'+xf+'" y="'+(cy-hIn/2)+'" width="'+(xb-xf)+'" height="'+hIn+'" fill="'+s2+'" opacity=".55"/>');
+    // 감쇠 지수: 투과가 남아 있으면 출구 높이가 T와 정확히 맞도록, 아니면 순수 αd
+    let kk = (hTraw>0.4&&hIn>hTraw) ? Math.log(hIn/hTraw) : o.al*S.d;
+    if(!(kk>0)) kk=0;
+    kk=Math.min(kk,90);
+    const N=72, top=[], bot=[];
+    for(let i=0;i<=N;i++){
+      const s=i/N, x=xf+(xb-xf)*s, hh=hIn*Math.exp(-kk*s);
+      top.push(x.toFixed(1)+' '+(cy-hh/2).toFixed(2));
+      bot.push(x.toFixed(1)+' '+(cy+hh/2).toFixed(2));
+    }
+    g.push('<path d="M '+top.join(' L ')+' L '+bot.reverse().join(' L ')+' Z" fill="'+s3+'" opacity=".92"/>');
+    // 흡수 깊이 1/α 가 시료 안에 들어오면 표시
+    const zf=o.al>0?1/(o.al*S.d):Infinity;
+    if(zf>0.02&&zf<0.96){
+      const xz=xf+(xb-xf)*zf;
+      g.push('<path d="M '+xz.toFixed(1)+' 32 L '+xz.toFixed(1)+' 168" stroke="'+mut+
+             '" stroke-width="1" stroke-dasharray="3 3" opacity=".85" fill="none"/>');
+      g.push('<text x="'+(xz+3).toFixed(1)+'" y="43" font-size="9" fill="'+mut+'" '+F+'>1/α</text>');
+    }
   }
   // 투과
   g.push('<rect x="'+xb+'" y="'+(cy-hT/2)+'" width="'+(x1-xb-12)+'" height="'+hT+'" fill="'+s3+'" opacity=".92"/>');
@@ -814,8 +833,9 @@ function drawBeam(o){
   // 흡수 — 쐐기에서 아래로 잇는 지시선
   const cx=(xf+xb)/2, yWedge=cy+ (hIn+hT)/4;
   g.push('<path d="M '+cx+' '+Math.min(yWedge+2,168)+' L '+cx+' 178" stroke="'+s2+'" stroke-width="1" opacity=".7" fill="none"/>');
-  g.push('<text x="'+cx+'" y="190" font-size="10.5" fill="'+s2+'" '+F+' font-weight="600" text-anchor="middle">흡수 '+pct(o.A)+' — 열로</text>');
-  g.push('<text x="150" y="206" font-size="9.5" fill="'+mut+'" '+F+' text-anchor="middle">높이 = 에너지 비율 ·  n = '+o.n.toPrecision(4)+' , κ = '+sci(o.k,3)+' , αd = '+sci(o.al*S.d,3)+'</text>');
+  g.push('<text x="'+cx+'" y="188" font-size="10.5" fill="'+s2+'" '+F+' font-weight="600" text-anchor="middle">흡수 '+pct(o.A)+' — 열로</text>');
+  g.push('<text x="150" y="203" font-size="9.5" fill="'+mut+'" '+F+' text-anchor="middle">n = '+o.n.toPrecision(4)+' , κ = '+sci(o.k,3)+' , αd = '+sci(o.al*S.d,3)+'</text>');
+  g.push('<text x="150" y="215" font-size="9.5" fill="'+mut+'" '+F+' text-anchor="middle">높이 = 에너지 비율 ·  시료 안은 Beer 법칙 e<tspan baseline-shift="super" font-size="7">−αz</tspan></text>');
   svg.innerHTML=g.join('');
 }
 
