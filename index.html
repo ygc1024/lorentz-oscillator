@@ -1,0 +1,868 @@
+<title>Lorentz 진동자 — 그림 2.4 실습</title>
+<style>
+/* ── tokens ─────────────────────────────────────────────────────────── */
+:root{
+  --bg:#eceff4; --panel:#fbfcfe; --sunk:#f2f5f9;
+  --ink:#151a23; --ink2:#48536a; --muted:#7f8ba3;
+  --rule:#d3dae6; --rule-soft:#e3e9f2;
+  --accent:#2f5fd0; --accent-soft:#dfe6fb;
+  --s1:#2f5fd0;  /* 실수부 계열: ε₁, n, 반사 */
+  --s2:#c1461f;  /* 허수부 계열: ε₂, κ, 흡수 */
+  --s3:#0e9070;  /* 투과 */
+  --shadow:0 1px 2px rgba(21,26,35,.06), 0 8px 24px -14px rgba(21,26,35,.28);
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#0d1015; --panel:#151a22; --sunk:#101419;
+    --ink:#e7ecf4; --ink2:#a5aec0; --muted:#6d7789;
+    --rule:#252c38; --rule-soft:#1c222c;
+    --accent:#5b87e8; --accent-soft:#1d2740;
+    --s1:#5b87e8; --s2:#db6c42; --s3:#17a67c;
+    --shadow:0 1px 2px rgba(0,0,0,.5), 0 8px 24px -14px rgba(0,0,0,.8);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0d1015; --panel:#151a22; --sunk:#101419;
+  --ink:#e7ecf4; --ink2:#a5aec0; --muted:#6d7789;
+  --rule:#252c38; --rule-soft:#1c222c;
+  --accent:#5b87e8; --accent-soft:#1d2740;
+  --s1:#5b87e8; --s2:#db6c42; --s3:#17a67c;
+  --shadow:0 1px 2px rgba(0,0,0,.5), 0 8px 24px -14px rgba(0,0,0,.8);
+}
+:root[data-theme="light"]{
+  --bg:#eceff4; --panel:#fbfcfe; --sunk:#f2f5f9;
+  --ink:#151a23; --ink2:#48536a; --muted:#7f8ba3;
+  --rule:#d3dae6; --rule-soft:#e3e9f2;
+  --accent:#2f5fd0; --accent-soft:#dfe6fb;
+  --s1:#2f5fd0; --s2:#c1461f; --s3:#0e9070;
+  --shadow:0 1px 2px rgba(21,26,35,.06), 0 8px 24px -14px rgba(21,26,35,.28);
+}
+
+/* ── base ───────────────────────────────────────────────────────────── */
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:system-ui,"Segoe UI","Malgun Gothic","Apple SD Gothic Neo",sans-serif;
+  font-size:15px; line-height:1.6; -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1440px; margin:0 auto; padding:0 20px 72px}
+.serif{font-family:"Iowan Old Style","Palatino Linotype",Georgia,"Times New Roman",serif}
+.mono{font-family:ui-monospace,"Cascadia Mono",Consolas,"SF Mono",monospace; font-variant-numeric:tabular-nums}
+h1,h2,h3{margin:0; text-wrap:balance; font-weight:600}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:3px}
+
+/* ── header ─────────────────────────────────────────────────────────── */
+header{padding:34px 0 22px; border-bottom:1px solid var(--rule)}
+.eyebrow{
+  font-size:11.5px; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--muted); font-weight:600;
+}
+header h1{font-size:clamp(28px,4.2vw,42px); letter-spacing:-.02em; margin:8px 0 0}
+header h1 em{font-style:normal; color:var(--accent)}
+header p{margin:10px 0 0; max-width:64ch; color:var(--ink2); font-size:15.5px}
+
+/* ── layout ─────────────────────────────────────────────────────────── */
+.main{display:grid; grid-template-columns:330px minmax(0,1fr); gap:22px; margin-top:22px; align-items:start}
+@media (max-width:1080px){ .main{grid-template-columns:1fr} }
+
+.card{background:var(--panel); border:1px solid var(--rule); border-radius:10px; box-shadow:var(--shadow)}
+.card-h{
+  display:flex; align-items:baseline; justify-content:space-between; gap:10px;
+  padding:12px 14px; border-bottom:1px solid var(--rule-soft);
+}
+.card-h h2{font-size:13px; letter-spacing:.05em; text-transform:uppercase; color:var(--ink2)}
+.card-h .hint{font-size:11.5px; color:var(--muted)}
+
+/* ── rail ───────────────────────────────────────────────────────────── */
+.rail{display:flex; flex-direction:column; gap:14px; position:sticky; top:14px}
+@media (max-width:1080px){ .rail{position:static} }
+.rail .body{padding:14px}
+
+.chips{display:flex; flex-wrap:wrap; gap:6px}
+.chip{
+  font:inherit; font-size:12.5px; padding:6px 10px; cursor:pointer;
+  background:var(--sunk); color:var(--ink2); border:1px solid var(--rule);
+  border-radius:999px; transition:background .12s, color .12s, border-color .12s;
+}
+.chip:hover{border-color:var(--accent); color:var(--ink)}
+.chip[aria-pressed="true"]{background:var(--accent); border-color:var(--accent); color:#fff; font-weight:600}
+
+.ctl{padding:11px 0; border-top:1px solid var(--rule-soft)}
+.ctl:first-child{border-top:0; padding-top:2px}
+.ctl-top{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:7px}
+.ctl-top label{font-size:13px; color:var(--ink2)}
+.ctl-top label b{color:var(--ink); font-weight:600}
+.num{
+  width:112px; text-align:right; font-family:ui-monospace,Consolas,monospace; font-size:12px;
+  padding:3px 6px; border:1px solid var(--rule); border-radius:5px;
+  background:var(--sunk); color:var(--ink);
+}
+input[type=range]{
+  -webkit-appearance:none; appearance:none; width:100%; height:18px;
+  background:transparent; cursor:ew-resize; margin:0;
+}
+input[type=range]::-webkit-slider-runnable-track{height:4px; border-radius:2px; background:var(--rule)}
+input[type=range]::-moz-range-track{height:4px; border-radius:2px; background:var(--rule)}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none; width:15px; height:15px; border-radius:50%;
+  background:var(--panel); border:2.5px solid var(--accent); margin-top:-5.5px;
+}
+input[type=range]::-moz-range-thumb{
+  width:15px; height:15px; border-radius:50%; box-sizing:border-box;
+  background:var(--panel); border:2.5px solid var(--accent);
+}
+.derived{display:flex; flex-wrap:wrap; gap:5px; margin-top:12px}
+.tag{
+  font-family:ui-monospace,Consolas,monospace; font-size:11px; padding:3px 7px;
+  background:var(--sunk); border:1px solid var(--rule-soft); border-radius:5px; color:var(--ink2);
+}
+.toggles{display:flex; flex-direction:column; gap:9px; margin-top:12px; padding-top:12px; border-top:1px solid var(--rule-soft)}
+.tog{display:flex; align-items:flex-start; gap:8px; font-size:13px; color:var(--ink2); cursor:pointer}
+.tog input{margin:3px 0 0; accent-color:var(--accent); flex:none}
+
+/* readout */
+.read{padding:4px 14px 12px}
+.read table{width:100%; border-collapse:collapse}
+.read td{padding:3.5px 0; font-size:12.5px; border-bottom:1px solid var(--rule-soft)}
+.read tr:last-child td{border-bottom:0}
+.read td:first-child{color:var(--muted)}
+.read td:last-child{text-align:right; font-family:ui-monospace,Consolas,monospace; font-variant-numeric:tabular-nums; color:var(--ink)}
+.read .sec td{padding-top:10px; color:var(--ink2); font-weight:600; font-size:11px; letter-spacing:.08em; text-transform:uppercase; border-bottom:0}
+.sw{display:inline-block; width:8px; height:8px; border-radius:2px; margin-right:6px; vertical-align:middle}
+
+/* ── figures ────────────────────────────────────────────────────────── */
+.stage{display:flex; flex-direction:column; gap:14px}
+.grid4{display:grid; grid-template-columns:1fr 1fr; gap:0; padding:6px}
+@media (max-width:640px){ .grid4{grid-template-columns:1fr} }
+.pan{padding:6px 8px 4px; position:relative}
+.pan-h{display:flex; align-items:baseline; gap:8px; padding:0 0 2px 4px}
+.pan-h .t{font-size:13px; font-weight:600}
+.pan-h .d{font-size:11.5px; color:var(--muted)}
+.pan canvas{display:block; width:100%; height:190px; touch-action:none}
+.legend{display:flex; gap:12px; flex-wrap:wrap; padding:2px 0 0 4px; font-size:11.5px; color:var(--ink2)}
+.legend span{display:inline-flex; align-items:center; gap:5px}
+.lg{width:14px; height:2.5px; border-radius:2px; display:inline-block}
+
+.budget{display:grid; grid-template-columns:minmax(0,1fr) 300px; gap:8px; padding:6px 8px 10px}
+@media (max-width:900px){ .budget{grid-template-columns:1fr} }
+#beam{width:100%; max-width:380px; margin:auto; height:auto; min-height:190px; display:block}
+
+/* ── notes ──────────────────────────────────────────────────────────── */
+.notes{display:grid; grid-template-columns:repeat(auto-fit,minmax(310px,1fr)); gap:14px; margin-top:22px}
+.notes .body{padding:6px 16px 16px}
+.notes p{margin:10px 0; font-size:14px; color:var(--ink2)}
+.notes ul{margin:10px 0; padding-left:18px; font-size:14px; color:var(--ink2)}
+.notes li{margin:7px 0}
+.notes b{color:var(--ink); font-weight:600}
+.eqno{
+  margin:12px 0 3px; text-align:right; font-size:11px; letter-spacing:.06em;
+  color:var(--muted); font-family:ui-monospace,Consolas,monospace;
+}
+.eq{
+  margin:0 0 4px; padding:10px 12px; background:var(--sunk); border:1px solid var(--rule-soft);
+  border-radius:7px; font-family:ui-monospace,Consolas,monospace; font-size:12.5px;
+  color:var(--ink); overflow-x:auto; white-space:nowrap; line-height:2;
+}
+details{border-top:1px solid var(--rule-soft); padding:9px 0}
+details summary{cursor:pointer; font-size:14px; color:var(--ink); font-weight:600; list-style:none}
+details summary::-webkit-details-marker{display:none}
+details summary::before{content:"▸ "; color:var(--accent)}
+details[open] summary::before{content:"▾ "}
+details p{margin:8px 0 2px 14px; font-size:13.5px}
+kbd{
+  font-family:ui-monospace,Consolas,monospace; font-size:11.5px; padding:1px 5px;
+  border:1px solid var(--rule); border-radius:4px; background:var(--sunk);
+}
+footer{
+  margin-top:34px; padding-top:16px; border-top:1px solid var(--rule);
+  display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between;
+  font-size:12.5px; color:var(--muted);
+}
+.btn{
+  font:inherit; font-size:12.5px; padding:6px 12px; border-radius:6px; cursor:pointer;
+  background:var(--panel); border:1px solid var(--rule); color:var(--ink2);
+}
+.btn:hover{border-color:var(--accent); color:var(--ink)}
+@media (prefers-reduced-motion:reduce){ *{transition:none !important} }
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">Fox · Optical Properties of Solids · §2.2.1 · Fig. 2.4</div>
+  <h1 class="serif">Lorentz 진동자 <em>실습판</em></h1>
+  <p>감쇠 조화진동자 하나가 유전율 ε₁·ε₂를 만들고, 거기서 굴절률 n과 소광계수 κ가 따라 나옵니다.
+     파라미터를 움직이면서 네 곡선이 어떻게 함께 변하는지, 그리고 그 결과로 빛이 얼마나 반사·흡수·투과되는지를
+     한 화면에서 보세요.</p>
+</header>
+
+<div class="main">
+  <!-- ══ 조작부 ══ -->
+  <div class="rail">
+    <div class="card">
+      <div class="card-h"><h2>대표 예시</h2><span class="hint">눌러서 불러오기</span></div>
+      <div class="body">
+        <div class="chips" id="presets"></div>
+        <p style="margin:11px 0 0; font-size:12.5px; color:var(--muted)" id="presetNote"></p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-h"><h2>진동자 파라미터</h2></div>
+      <div class="body" id="controls"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-h"><h2>커서 위치의 값</h2><span class="hint">그래프 위에서 드래그</span></div>
+      <div class="read">
+        <table>
+          <tr class="sec"><td colspan="2">빛</td></tr>
+          <tr><td>ω</td><td id="r_w">–</td></tr>
+          <tr><td>ν = ω/2π</td><td id="r_nu">–</td></tr>
+          <tr><td>λ (진공)</td><td id="r_lam">–</td></tr>
+          <tr><td>ħω</td><td id="r_e">–</td></tr>
+          <tr><td>ω − ω₀</td><td id="r_dw">–</td></tr>
+          <tr class="sec"><td colspan="2">매질 응답</td></tr>
+          <tr><td><i class="sw" style="background:var(--s1)"></i>ε₁</td><td id="r_e1">–</td></tr>
+          <tr><td><i class="sw" style="background:var(--s2)"></i>ε₂</td><td id="r_e2">–</td></tr>
+          <tr><td><i class="sw" style="background:var(--s1)"></i>n</td><td id="r_n">–</td></tr>
+          <tr><td><i class="sw" style="background:var(--s2)"></i>κ</td><td id="r_k">–</td></tr>
+          <tr><td>α = 2κω/c</td><td id="r_a">–</td></tr>
+          <tr><td>흡수 깊이 1/α</td><td id="r_ad">–</td></tr>
+          <tr class="sec"><td colspan="2">두께 d 시료</td></tr>
+          <tr><td>단일 면 반사율</td><td id="r_R1">–</td></tr>
+          <tr><td><i class="sw" style="background:var(--s1)"></i>반사 R</td><td id="r_R">–</td></tr>
+          <tr><td><i class="sw" style="background:var(--s2)"></i>흡수 A</td><td id="r_A">–</td></tr>
+          <tr><td><i class="sw" style="background:var(--s3)"></i>투과 T</td><td id="r_T">–</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 그래프 ══ -->
+  <div class="stage">
+    <div class="card">
+      <div class="card-h">
+        <h2>그림 2.4 &nbsp;·&nbsp; 유전율과 굴절률</h2>
+        <span class="hint" id="modeHint">정확식 (2.15 / 2.16)</span>
+      </div>
+      <div class="grid4" id="fig24">
+        <div class="pan">
+          <div class="pan-h"><span class="t" style="color:var(--s1)">ε₁</span><span class="d">유전율 실수부 — 굴절을 결정</span></div>
+          <canvas id="c_e1"></canvas><div class="legend" id="l_e1"></div>
+        </div>
+        <div class="pan">
+          <div class="pan-h"><span class="t" style="color:var(--s1)">n</span><span class="d">굴절률 실수부</span></div>
+          <canvas id="c_n"></canvas><div class="legend" id="l_n"></div>
+        </div>
+        <div class="pan">
+          <div class="pan-h"><span class="t" style="color:var(--s2)">ε₂</span><span class="d">유전율 허수부 — 흡수를 결정</span></div>
+          <canvas id="c_e2"></canvas><div class="legend" id="l_e2"></div>
+        </div>
+        <div class="pan">
+          <div class="pan-h"><span class="t" style="color:var(--s2)">κ</span><span class="d">소광계수</span></div>
+          <canvas id="c_k"></canvas><div class="legend" id="l_k"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-h">
+        <h2>빛의 수지 &nbsp;·&nbsp; 반사 · 흡수 · 투과</h2>
+        <span class="hint" id="thickHint"></span>
+      </div>
+      <div class="budget">
+        <div class="pan" style="padding-top:2px">
+          <div class="legend" style="padding-bottom:4px">
+            <span><i class="lg" style="background:var(--s1)"></i>반사 R</span>
+            <span><i class="lg" style="background:var(--s2)"></i>흡수 A</span>
+            <span><i class="lg" style="background:var(--s3)"></i>투과 T</span>
+            <span style="color:var(--muted)">세 값의 합은 항상 1</span>
+          </div>
+          <canvas id="c_rta" style="height:212px"></canvas>
+        </div>
+        <div class="pan" style="display:flex; flex-direction:column">
+          <svg id="beam" viewBox="0 0 300 210" preserveAspectRatio="xMidYMid meet" aria-label="커서 진동수에서의 빛 경로 도식"></svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 해설 ══ -->
+<div class="notes">
+  <div class="card">
+    <div class="card-h"><h2>쓰는 식</h2></div>
+    <div class="body">
+      <p>전자를 감쇠 조화진동자로 보고 (식 2.5) 강제진동 해를 구하면, 공명 하나짜리 매질의 유전율이 나옵니다.
+         여기서 ω<sub>p</sub>² ≡ Ne²/ε₀m₀ = (ε<sub>st</sub> − ε<sub>∞</sub>)ω₀² 입니다.</p>
+      <div class="eqno">식 2.15 / 2.16</div>
+      <div class="eq">
+        ε₁ = ε∞ + ωp²·(ω₀²−ω²) / [(ω₀²−ω²)² + (γω)²]<br>
+        ε₂ = &nbsp;&nbsp;&nbsp;&nbsp; ωp²·(γω) &nbsp;/ [(ω₀²−ω²)² + (γω)²]
+      </div>
+      <p>공명 근처(ω ≈ ω₀ ≫ γ)에서는 Δω = ω − ω₀로 두고 (ω₀²−ω²) ≈ −2ω₀Δω로 줄여 쓸 수 있습니다.</p>
+      <div class="eqno">식 2.20 / 2.21</div>
+      <div class="eq">
+        ε₁ = ε∞ − (εst−ε∞)·2ω₀Δω / [4Δω² + γ²]<br>
+        ε₂ = &nbsp;(εst−ε∞)·&nbsp;γω₀&nbsp;&nbsp; / [4Δω² + γ²]
+      </div>
+      <p>측정으로 얻는 양은 n과 κ입니다. ε̃ = (n + iκ)² 를 풀면</p>
+      <div class="eqno">식 1.25 / 1.26</div>
+      <div class="eq">
+        n = √( (√(ε₁²+ε₂²) + ε₁) / 2 )<br>
+        κ = √( (√(ε₁²+ε₂²) − ε₁) / 2 )
+      </div>
+      <p>흡수계수와 수직입사 반사율, 그리고 두께 d 시료의 (간섭을 무시한) 투과·반사는</p>
+      <div class="eqno">식 1.19 / 1.29</div>
+      <div class="eq">
+        α = 2κω/c ,&nbsp;&nbsp; R₁ = [(n−1)² + κ²] / [(n+1)² + κ²]
+      </div>
+      <div class="eqno">연습문제 1.8</div>
+      <div class="eq">
+        T = (1−R₁)²e<sup>−αd</sup> / (1 − R₁²e<sup>−2αd</sup>) ,&nbsp;&nbsp; A = 1 − R − T
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-h"><h2>그래프에서 확인할 것</h2></div>
+    <div class="body">
+      <ul>
+        <li><b>ε₂는 ω₀에 뾰족한 봉우리</b>를 갖고 반치폭이 정확히 γ입니다. γ를 키우면 봉우리가 낮아지면서 넓어집니다 — 감쇠가 선폭을 만듭니다.</li>
+        <li><b>ε₁은 ω₀−γ/2에서 최대, ω₀+γ/2에서 최소</b>가 됩니다. 공명을 지나면서 ε<sub>st</sub>에서 ε<sub>∞</sub>로 떨어지고, 그 낙차가 진동자 세기 ε<sub>st</sub>−ε<sub>∞</sub>입니다.</li>
+        <li><b>n은 대략 √ε₁을, κ는 대략 ε₂를 따라갑니다.</b> 비교선을 켜서 확인해 보세요. n ≫ κ일 때만 정확히 맞고, 흡수가 아주 강한 ω₀ 부근에서는 어긋납니다.</li>
+        <li><b>굴절률 효과가 흡수보다 훨씬 멀리 갑니다.</b> 공명에서 멀어질 때 ε₂는 Δω⁻²로, ε₁의 변화는 Δω⁻¹로 줄어듭니다 — 투명한 영역에도 분산이 남는 이유입니다.</li>
+        <li><b>ε₁ &lt; 0인 구간</b>에서는 파동이 매질 안으로 들어가지 못해 반사율이 1에 가까워집니다. 이온결정 예시에서 보이는 잔류선(Reststrahlen) 띠가 그것입니다.</li>
+        <li><b>흡수 A는 두께에 의존</b>하지만 R, n, κ는 그렇지 않습니다. 두께 슬라이더만 움직여 보면 어떤 양이 물질의 성질이고 어떤 양이 시료의 성질인지 구분됩니다.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-h"><h2>해볼 것</h2><span class="hint">답은 눌러서 확인</span></div>
+    <div class="body">
+      <details><summary>1. γ만 10배 키우면 ε₂의 봉우리 높이는 어떻게 되나?</summary>
+        <p>ω₀에서 ε₂ = (ε<sub>st</sub>−ε<sub>∞</sub>)ω₀/γ 이므로 정확히 1/10로 줄고, 폭은 10배가 됩니다.
+           봉우리 아래 넓이(진동자 세기)는 보존됩니다. 커서를 ω₀에 두고 γ를 움직이며 숫자로 확인하세요.</p></details>
+      <details><summary>2. 「원자 기체」 예시에서 n의 최대·최소는 어디에 있나?</summary>
+        <p>ω₀ − γ/2와 ω₀ + γ/2입니다. 이 예시(Na D₂선)에서 γ/2 = 50 MHz에 해당하고,
+           공명 기여분의 최댓값은 약 3.95 × 10⁻⁵입니다 (교재 예제 2.1). 값이 워낙 작아 n ≈ 1이지만 곡선 모양은 그대로입니다.</p></details>
+      <details><summary>3. 왜 GaAs·NaCl 예시에서는 반사율이 1에 가까운 넓은 띠가 생기나?</summary>
+        <p>ω<sub>TO</sub>와 ω<sub>LO</sub> = ω<sub>TO</sub>√(ε<sub>st</sub>/ε<sub>∞</sub>) 사이에서 ε₁이 음수입니다.
+           그러면 n이 작고 κ가 커져서 R₁ = [(n−1)²+κ²]/[(n+1)²+κ²]이 1에 접근합니다.
+           빛은 흡수되는 것이 아니라 되튕겨 나옵니다. 두께를 키워도 이 띠의 반사율은 거의 그대로입니다.</p></details>
+      <details><summary>4. 근사식(2.20/2.21)은 어디서부터 틀리기 시작하나?</summary>
+        <p>토글을 켜고 보기 폭을 넓혀 보세요. |Δω| ≳ ω₀/10이 되면 (ω₀²−ω²) ≈ −2ω₀Δω 가정이 깨져서
+           날개 부분이 어긋나고, ω → 0 극한에서 ε₁이 ε<sub>st</sub>로 수렴하지 않습니다.</p></details>
+      <details><summary>5. 「유리」 예시에서 가시광 영역의 색분산은 어느 쪽이 큰가?</summary>
+        <p>자외선 공명의 저주파 쪽 날개에 해당하므로 ε₁은 진동수가 높을수록 커집니다.
+           즉 파란빛의 n이 보라빛 쪽으로 갈수록 커지는 정상분산이고, 프리즘이 파란빛을 더 많이 꺾는 이유입니다.</p></details>
+      <details><summary>6. 흡수 A를 최대로 만들려면?</summary>
+        <p>반사가 너무 크면 빛이 들어가지 못하고, 두께가 얇으면 그냥 통과합니다.
+           αd ≈ 1~3이면서 R₁이 작은 조건 — 보통 공명에서 살짝 벗어난 어깨 부분에서 A가 최대가 됩니다.
+           두께 슬라이더와 커서를 함께 움직이며 A의 봉우리가 어디로 가는지 보세요.</p></details>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div>출처: M. Fox, <i>Optical Properties of Solids</i> 2nd ed. (Oxford, 2010) §2.2.1, 그림 2.4 · 계산은 위 식들을 그대로 사용합니다.</div>
+  <div style="display:flex; gap:8px; align-items:center">
+    <span class="mono" style="font-size:11px">현재 설정은 주소(#)에 저장됩니다</span>
+    <button class="btn" id="copyBtn">링크 복사</button>
+  </div>
+</footer>
+</div>
+
+<script>
+(function(){
+"use strict";
+const C=2.99792458e8, HBAR=1.054571817e-34, EV=1.602176634e-19;
+
+/* ── 상태 ─────────────────────────────────────────────────────────── */
+const S={w0:1e14, gam:5e12, deps:2.1, einf:10, d:1e-5, span:8, approx:false, compare:false, cursor:null};
+
+const PRESETS=[
+ {k:"fox", n:"교재 그림 2.4", s:{w0:1e14,gam:5e12,deps:2.1,einf:10,d:1e-5,span:8},
+  note:"ω₀ = 10¹⁴ rad/s, γ = 5×10¹² s⁻¹, ε_st = 12.1, ε_∞ = 10 — 책의 그림과 같은 설정입니다."},
+ {k:"na", n:"원자 기체 (Na D₂)", s:{w0:3.1980e15,gam:6.2832e8,deps:3.112e-11,einf:1,d:1e-2,span:8},
+  note:"589.0 nm, 선폭 100 MHz, 원자밀도 10¹⁷ m⁻³ (예제 2.1). 기여분이 10⁻⁵ 수준이라 n ≈ 1이지만 모양은 같습니다."},
+ {k:"gaas", n:"GaAs 격자진동", s:{w0:5.06e13,gam:1.0e12,deps:2.0,einf:10.9,d:1e-4,span:38},
+  note:"TO 포논 268 cm⁻¹, ε_st = 12.9, ε_∞ = 10.9. ω_TO와 ω_LO 사이에 잔류선(Reststrahlen) 반사띠가 생깁니다."},
+ {k:"nacl", n:"NaCl 격자진동", s:{w0:3.09e13,gam:1.5e12,deps:3.65,einf:2.25,d:5e-5,span:32},
+  note:"이온성이 강해 ε_st(5.9) ≫ ε_∞(2.25). 반사띠가 훨씬 넓고 강합니다."},
+ {k:"glass", n:"유리의 자외선 공명", s:{w0:2.0e16,gam:2.0e15,deps:1.1,einf:1,d:1e-3,span:9},
+  note:"공명은 자외선에 있고 가시광(≈3.6×10¹⁵ rad/s)은 저주파 날개에 놓입니다 — 투명하면서 분산이 있는 영역."},
+ {k:"strong", n:"아주 센 진동자", s:{w0:1e14,gam:5e12,deps:60,einf:1,d:1e-5,span:14},
+  note:"ε_st−ε_∞를 키우면 ε₁이 음수인 구간이 넓어지고 금속처럼 넓은 반사띠가 생깁니다."}
+];
+
+/* ── 물리 ─────────────────────────────────────────────────────────── */
+function epsAt(w){
+  let e1,e2;
+  if(S.approx){
+    const dw=w-S.w0, den=4*dw*dw+S.gam*S.gam;
+    e1=S.einf - S.deps*2*S.w0*dw/den;
+    e2=S.deps*S.gam*S.w0/den;
+  }else{
+    const wp2=S.deps*S.w0*S.w0, a=S.w0*S.w0-w*w, b=S.gam*w, den=a*a+b*b;
+    e1=S.einf + wp2*a/den;
+    e2=wp2*b/den;
+  }
+  return [e1,e2];
+}
+function nk(e1,e2){
+  const m=Math.hypot(e1,e2);
+  return [Math.sqrt(Math.max(0,(m+e1)/2)), Math.sqrt(Math.max(0,(m-e1)/2))];
+}
+function optics(w){
+  const [e1,e2]=epsAt(w), [n,k]=nk(e1,e2);
+  const al=2*k*w/C;
+  const R1=((n-1)*(n-1)+k*k)/((n+1)*(n+1)+k*k);
+  const ex=Math.exp(-al*S.d), den=1-R1*R1*ex*ex;
+  const T=den>1e-300 ? (1-R1)*(1-R1)*ex/den : 0;
+  const R=den>1e-300 ? R1*(1+(1-R1)*(1-R1)*ex*ex/den) : R1;
+  return {e1,e2,n,k,al,R1,R,T,A:Math.max(0,1-R-T)};
+}
+function range(){
+  const W=S.span*S.gam;
+  return [Math.max(S.w0-W, 0.008*S.w0), S.w0+W];
+}
+function grid(){
+  const [a,b]=range(), xs=[], N=560;
+  for(let i=0;i<N;i++) xs.push(a+(b-a)*i/(N-1));
+  const dw=Math.min(4*S.gam,(b-a)/2);
+  for(let i=0;i<=220;i++){ const x=S.w0-dw+2*dw*i/220; if(x>a&&x<b) xs.push(x); }
+  xs.sort((p,q)=>p-q);
+  return xs;
+}
+
+/* ── 포맷 ─────────────────────────────────────────────────────────── */
+const SUP={'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};
+const sup=s=>String(s).split('').map(c=>SUP[c]||c).join('');
+function sci(x,sig=4){
+  if(!isFinite(x)) return '–';
+  if(x===0) return '0';
+  const e=Math.floor(Math.log10(Math.abs(x)));
+  if(e>=-3&&e<5) return (Math.abs(x)<1?x.toPrecision(sig):x.toFixed(Math.max(0,sig-1-e)));
+  return (x/Math.pow(10,e)).toFixed(sig-1)+'×10'+sup(e);
+}
+function lenStr(m){
+  if(m<1e-6) return (m*1e9).toPrecision(4)+' nm';
+  if(m<1e-3) return (m*1e6).toPrecision(4)+' µm';
+  if(m<1) return (m*1e3).toPrecision(4)+' mm';
+  return m.toPrecision(4)+' m';
+}
+function pct(x){ return (100*x).toFixed(x<0.01&&x>0?3:1)+' %'; }
+function niceTicks(lo,hi,n){
+  if(!(hi>lo)) return [lo];
+  const raw=(hi-lo)/n, e=Math.pow(10,Math.floor(Math.log10(raw))), f=raw/e;
+  const step=(f<1.5?1:f<3?2:f<7?5:10)*e;
+  const out=[]; for(let v=Math.ceil(lo/step)*step; v<=hi+step*1e-6; v+=step) out.push(v);
+  return out;
+}
+function tickFmt(step){
+  if(step===0) return v=>v.toFixed(1);
+  const e=Math.floor(Math.log10(Math.abs(step)));
+  if(e<-6||e>5) return v=>v===0?'0':sci(v,2);
+  const dec=Math.max(0,-e);
+  return v=>(Math.abs(v)<step*1e-6?0:v).toFixed(dec);
+}
+
+/* ── 캔버스 ───────────────────────────────────────────────────────── */
+function css(k){ return getComputedStyle(document.documentElement).getPropertyValue(k).trim(); }
+function setup(cv){
+  const dpr=window.devicePixelRatio||1, r=cv.getBoundingClientRect();
+  const w=Math.max(80,r.width), h=Math.max(60,r.height);
+  cv.width=Math.round(w*dpr); cv.height=Math.round(h*dpr);
+  const ctx=cv.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,w,h);
+  return {ctx,w,h};
+}
+function axes(ctx,g,xr,yr,xf,base){
+  const {L,R,T,B,w,h}=g, ink=css('--muted'), rule=css('--rule-soft');
+  ctx.font='10px ui-monospace,Consolas,monospace'; ctx.strokeStyle=rule; ctx.lineWidth=1;
+  const yt=niceTicks(yr[0],yr[1],5), yfmt=tickFmt(yt.length>1?yt[1]-yt[0]:0);
+  ctx.textAlign='right'; ctx.textBaseline='middle'; ctx.fillStyle=ink;
+  for(const v of yt){
+    const y=Math.round(g.py(v))+0.5;
+    if(y<T-1||y>h-B+1) continue;
+    ctx.beginPath(); ctx.moveTo(L,y); ctx.lineTo(w-R,y); ctx.stroke();
+    ctx.fillText(yfmt(v),L-6,y);
+  }
+  // y = 0 강조
+  if(yr[0]<0&&yr[1]>0){
+    const y=Math.round(g.py(0))+0.5; ctx.strokeStyle=css('--rule'); ctx.lineWidth=1.2;
+    ctx.beginPath(); ctx.moveTo(L,y); ctx.lineTo(w-R,y); ctx.stroke();
+  }
+  const xt=niceTicks((xr[0]-base)/xf.f,(xr[1]-base)/xf.f,4), xfmt=tickFmt(xt.length>1?xt[1]-xt[0]:0);
+  ctx.textAlign='center'; ctx.textBaseline='top'; ctx.fillStyle=ink; ctx.strokeStyle=rule;
+  for(const v of xt){
+    const x=Math.round(g.px(v*xf.f+base))+0.5;
+    if(x<L-1||x>w-R+1) continue;
+    ctx.beginPath(); ctx.moveTo(x,T); ctx.lineTo(x,h-B); ctx.stroke();
+    ctx.fillText(xfmt(v),x,h-B+5);
+  }
+  ctx.fillStyle=css('--muted'); ctx.textAlign='right';
+  ctx.fillText(xf.label,w-R,h-B+18);
+  // ω₀ 표시
+  if(S.w0>=xr[0]&&S.w0<=xr[1]){
+    const x=Math.round(g.px(S.w0))+0.5;
+    ctx.save(); ctx.setLineDash([3,3]); ctx.strokeStyle=css('--muted'); ctx.globalAlpha=.75;
+    ctx.beginPath(); ctx.moveTo(x,T); ctx.lineTo(x,h-B); ctx.stroke(); ctx.restore();
+    ctx.fillStyle=css('--muted'); ctx.textAlign='center'; ctx.textBaseline='top';
+    ctx.fillText('ω₀',x,T-1);
+  }
+}
+function geom(w,h,showX){
+  const L=54,R=10,T=12,B=showX?30:14;
+  return {L,R,T,B,w,h,
+    px:null,py:null,
+    plotW:w-L-R, plotH:h-T-B};
+}
+function makeScales(g,xr,yr){
+  g.px=v=>g.L+(v-xr[0])/(xr[1]-xr[0])*g.plotW;
+  g.py=v=>g.T+(1-(v-yr[0])/(yr[1]-yr[0]))*g.plotH;
+  g.ix=x=>xr[0]+(x-g.L)/g.plotW*(xr[1]-xr[0]);
+}
+function xFactor(xr,detune){
+  const m=Math.max(Math.abs(detune?xr[1]-S.w0:xr[1]),Math.abs(detune?xr[0]-S.w0:xr[0]))||1;
+  const e=Math.floor(Math.log10(m))-2, f=Math.pow(10,e);
+  return {f,label:(detune?'ω − ω₀':'ω')+' (10'+sup(e)+' rad/s)'};
+}
+function yBounds(arrs){
+  let lo=Infinity,hi=-Infinity;
+  for(const a of arrs) for(const v of a){ if(!isFinite(v))continue; if(v<lo)lo=v; if(v>hi)hi=v; }
+  if(!isFinite(lo)||!isFinite(hi)) return [0,1];
+  if(hi-lo<Math.abs(hi)*1e-12+1e-300){ const p=Math.abs(hi)*0.1+1e-9; return [lo-p,hi+p]; }
+  const p=(hi-lo)*0.10; return [lo-p,hi+p];
+}
+
+function linePanel(cv,legEl,xs,series,detune){
+  const {ctx,w,h}=setup(cv), xr=range();
+  const g=geom(w,h,true), yr=yBounds(series.map(s=>s.ys));
+  makeScales(g,xr,yr);
+  const xf=xFactor(xr,detune);
+  axes(ctx,g,xr,yr,xf,detune?S.w0:0);
+  ctx.save(); ctx.beginPath(); ctx.rect(g.L,g.T-2,g.plotW,g.plotH+4); ctx.clip();
+  for(const s of series){
+    ctx.beginPath(); ctx.lineWidth=s.dash?1.6:2; ctx.strokeStyle=s.color;
+    ctx.setLineDash(s.dash?[4,3]:[]); ctx.lineJoin='round';
+    let started=false;
+    for(let i=0;i<xs.length;i++){
+      const y=s.ys[i]; if(!isFinite(y)){started=false;continue;}
+      const X=g.px(xs[i]), Y=g.py(y);
+      if(!started){ctx.moveTo(X,Y);started=true;} else ctx.lineTo(X,Y);
+    }
+    ctx.stroke(); ctx.setLineDash([]);
+  }
+  // 커서
+  if(S.cursor!==null&&S.cursor>=xr[0]&&S.cursor<=xr[1]){
+    const X=Math.round(g.px(S.cursor))+0.5;
+    ctx.strokeStyle=css('--ink2'); ctx.globalAlpha=.55; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(X,g.T); ctx.lineTo(X,h-g.B); ctx.stroke(); ctx.globalAlpha=1;
+    for(const s of series){
+      if(s.dash) continue;
+      const v=s.at(S.cursor);
+      if(!isFinite(v)) continue;
+      const Y=g.py(v);
+      if(Y<g.T-2||Y>h-g.B+2) continue;
+      ctx.fillStyle=css('--panel'); ctx.beginPath(); ctx.arc(X,Y,4.6,0,7); ctx.fill();
+      ctx.fillStyle=s.color; ctx.beginPath(); ctx.arc(X,Y,3.1,0,7); ctx.fill();
+    }
+  }
+  ctx.restore();
+  if(legEl){
+    legEl.innerHTML=series.length>1
+      ? series.map(s=>'<span><i class="lg" style="background:'+(s.dash?'transparent':s.color)+
+        (s.dash?';border-top:2px dashed '+s.color:'')+'"></i>'+s.name+'</span>').join('')
+      : '';
+  }
+}
+
+function stackPanel(cv,xs,data){
+  const {ctx,w,h}=setup(cv), xr=range(), g=geom(w,h,true);
+  makeScales(g,xr,[0,1]);
+  const xf=xFactor(xr,detuneMode());
+  axes(ctx,g,xr,[0,1],xf,detuneMode()?S.w0:0);
+  ctx.save(); ctx.beginPath(); ctx.rect(g.L,g.T,g.plotW,g.plotH); ctx.clip();
+  const bands=[
+    {key:'R',color:css('--s1'),lab:'반사 R'},
+    {key:'A',color:css('--s2'),lab:'흡수 A'},
+    {key:'T',color:css('--s3'),lab:'투과 T'}
+  ];
+  let base=new Array(xs.length).fill(0);
+  const tops=[];
+  for(const b of bands){
+    const top=xs.map((_,i)=>base[i]+data[b.key][i]);
+    ctx.beginPath();
+    for(let i=0;i<xs.length;i++){ const X=g.px(xs[i]),Y=g.py(top[i]); i?ctx.lineTo(X,Y):ctx.moveTo(X,Y); }
+    for(let i=xs.length-1;i>=0;i--){ ctx.lineTo(g.px(xs[i]),g.py(base[i])); }
+    ctx.closePath(); ctx.globalAlpha=.82; ctx.fillStyle=b.color; ctx.fill(); ctx.globalAlpha=1;
+    tops.push(top); base=top;
+  }
+  // 밴드 사이 2px 간격
+  ctx.strokeStyle=css('--panel'); ctx.lineWidth=2;
+  for(let bi=0;bi<2;bi++){
+    ctx.beginPath();
+    for(let i=0;i<xs.length;i++){ const X=g.px(xs[i]),Y=g.py(tops[bi][i]); i?ctx.lineTo(X,Y):ctx.moveTo(X,Y); }
+    ctx.stroke();
+  }
+  // 직접 라벨
+  ctx.font='600 11px system-ui,"Malgun Gothic",sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  for(let bi=0;bi<3;bi++){
+    const b=bands[bi], vals=data[b.key];
+    let best=-1,at=0;
+    for(let i=8;i<xs.length-8;i++) if(vals[i]>best){best=vals[i];at=i;}
+    if(best*g.plotH>22){
+      const yMid=(bi===0?best/2:(tops[bi][at]+tops[bi-1][at])/2);
+      const X=Math.min(Math.max(g.px(xs[at]),g.L+34),g.L+g.plotW-34);
+      const tw=ctx.measureText(b.lab).width;
+      ctx.fillStyle=css('--panel'); ctx.globalAlpha=.82;
+      ctx.fillRect(X-tw/2-5,g.py(yMid)-9,tw+10,18); ctx.globalAlpha=1;
+      ctx.fillStyle=b.color; ctx.fillText(b.lab,X,g.py(yMid));
+    }
+  }
+  if(S.cursor!==null&&S.cursor>=xr[0]&&S.cursor<=xr[1]){
+    const X=Math.round(g.px(S.cursor))+0.5;
+    ctx.strokeStyle=css('--ink'); ctx.globalAlpha=.7; ctx.lineWidth=1.2;
+    ctx.beginPath(); ctx.moveTo(X,g.T); ctx.lineTo(X,h-g.B); ctx.stroke(); ctx.globalAlpha=1;
+  }
+  ctx.restore();
+}
+function isDark(){
+  const a=document.documentElement.getAttribute('data-theme');
+  if(a) return a==='dark';
+  return window.matchMedia('(prefers-color-scheme:dark)').matches;
+}
+function detuneMode(){ return S.span*S.gam < 0.05*S.w0; }
+
+/* ── 빔 도식 ──────────────────────────────────────────────────────── */
+function drawBeam(o){
+  const svg=document.getElementById('beam');
+  const H=34, x0=10, xf=124, xb=176, x1=290, cy=104, yR=cy-H/2-30;
+  const hR=Math.max(1,H*o.R), hT=Math.max(1,H*o.T), wA=Math.max(0,46*Math.sqrt(o.A));
+  const s1=css('--s1'), s2=css('--s2'), s3=css('--s3'), ink=css('--ink2'), mut=css('--muted');
+  const F='font-family="system-ui,Malgun Gothic,sans-serif"';
+  const slabFill=isDark()?'rgba(219,108,66,'+(0.05+0.38*o.A)+')':'rgba(193,70,31,'+(0.04+0.30*o.A)+')';
+  const g=[];
+  // 시료
+  g.push('<rect x="'+xf+'" y="34" width="'+(xb-xf)+'" height="132" rx="2" fill="'+slabFill+'" stroke="'+css('--rule')+'"/>');
+  g.push('<text x="'+((xf+xb)/2)+'" y="28" font-size="9.5" fill="'+mut+'" '+F+' text-anchor="middle">시료</text>');
+  // 입사
+  g.push('<rect x="'+x0+'" y="'+(cy-H/2)+'" width="'+(xf-x0)+'" height="'+H+'" fill="'+ink+'" opacity=".2"/>');
+  g.push('<path d="M '+(xf-14)+' '+(cy-H/2)+' l 0 '+H+' l 13 '+(-H/2)+' Z" fill="'+ink+'" opacity=".45"/>');
+  g.push('<text x="'+(x0+2)+'" y="'+(cy+H/2+13)+'" font-size="10" fill="'+ink+'" '+F+'>입사 100 %</text>');
+  // 반사
+  g.push('<path d="M '+xf+' '+(cy-H/2)+' L '+(xf-26)+' '+(yR+hR)+' L '+x0+' '+(yR+hR)+' L '+x0+' '+yR+' L '+(xf-26)+' '+yR+' Z" fill="'+s1+'" opacity=".9"/>');
+  g.push('<path d="M '+(x0+14)+' '+yR+' l 0 '+hR+' l -13 '+(-hR/2)+' Z" fill="'+s1+'"/>');
+  g.push('<text x="'+x0+'" y="'+(yR-7)+'" font-size="10.5" fill="'+s1+'" '+F+' font-weight="600">반사 '+pct(o.R)+'</text>');
+  // 투과
+  g.push('<rect x="'+xb+'" y="'+(cy-hT/2)+'" width="'+(x1-xb-12)+'" height="'+hT+'" fill="'+s3+'" opacity=".92"/>');
+  g.push('<path d="M '+(x1-13)+' '+(cy-hT/2-3)+' l 0 '+(hT+6)+' l 13 '+(-hT/2-3)+' Z" fill="'+s3+'"/>');
+  g.push('<text x="'+x1+'" y="'+(cy-Math.max(hT/2,7)-8)+'" font-size="10.5" fill="'+s3+'" '+F+' font-weight="600" text-anchor="end">투과 '+pct(o.T)+'</text>');
+  // 흡수 (열로 빠져나감)
+  if(wA>1){
+    const cx=(xf+xb)/2;
+    g.push('<path d="M '+(cx-wA/2)+' '+(cy+H/2-2)+' L '+(cx+wA/2)+' '+(cy+H/2-2)+' L '+(cx+wA/6)+' 162 L '+(cx-wA/6)+' 162 Z" fill="'+s2+'" opacity=".85"/>');
+  }
+  g.push('<text x="'+((xf+xb)/2)+'" y="180" font-size="10.5" fill="'+s2+'" '+F+' font-weight="600" text-anchor="middle">흡수 '+pct(o.A)+'</text>');
+  g.push('<text x="150" y="199" font-size="9.5" fill="'+mut+'" '+F+' text-anchor="middle">n = '+o.n.toPrecision(4)+' ,  κ = '+sci(o.k,3)+' ,  αd = '+sci(o.al*S.d,3)+'</text>');
+  svg.innerHTML=g.join('');
+}
+
+/* ── 렌더 ─────────────────────────────────────────────────────────── */
+let raf=null;
+function render(){ if(raf) return; raf=requestAnimationFrame(()=>{raf=null; draw();}); }
+function draw(){
+  const xs=grid(), dm=detuneMode();
+  const e1=[],e2=[],n=[],k=[],R=[],A=[],T=[],se1=[],e2n=[];
+  for(const w of xs){
+    const o=optics(w);
+    e1.push(o.e1); e2.push(o.e2); n.push(o.n); k.push(o.k);
+    R.push(o.R); A.push(o.A); T.push(o.T);
+    se1.push(o.e1>0?Math.sqrt(o.e1):NaN);
+    e2n.push(o.n>1e-12?o.e2/(2*o.n):NaN);
+  }
+  const at=f=>w=>f(optics(w));
+  linePanel(document.getElementById('c_e1'),document.getElementById('l_e1'),xs,
+    [{name:'ε₁',color:css('--s1'),ys:e1,at:at(o=>o.e1)}],dm);
+  linePanel(document.getElementById('c_e2'),document.getElementById('l_e2'),xs,
+    [{name:'ε₂',color:css('--s2'),ys:e2,at:at(o=>o.e2)}],dm);
+  linePanel(document.getElementById('c_n'),document.getElementById('l_n'),xs,
+    S.compare?[{name:'n',color:css('--s1'),ys:n,at:at(o=>o.n)},
+               {name:'√ε₁',color:css('--s1'),ys:se1,dash:true,at:at(o=>o.e1>0?Math.sqrt(o.e1):NaN)}]
+             :[{name:'n',color:css('--s1'),ys:n,at:at(o=>o.n)}],dm);
+  linePanel(document.getElementById('c_k'),document.getElementById('l_k'),xs,
+    S.compare?[{name:'κ',color:css('--s2'),ys:k,at:at(o=>o.k)},
+               {name:'ε₂/2n',color:css('--s2'),ys:e2n,dash:true,at:at(o=>o.e2/(2*o.n))}]
+             :[{name:'κ',color:css('--s2'),ys:k,at:at(o=>o.k)}],dm);
+  stackPanel(document.getElementById('c_rta'),xs,{R,A,T});
+
+  const cw=S.cursor===null?S.w0:S.cursor, o=optics(cw);
+  drawBeam(o);
+  const set=(id,v)=>document.getElementById(id).textContent=v;
+  set('r_w',sci(cw,4)+' rad/s');
+  set('r_nu',sci(cw/(2*Math.PI)/1e12,4)+' THz');
+  set('r_lam',lenStr(2*Math.PI*C/cw));
+  const E=HBAR*cw/EV;
+  set('r_e',E<0.1?(E*1000).toPrecision(4)+' meV':E.toPrecision(4)+' eV');
+  set('r_dw',(cw-S.w0>=0?'+':'')+sci(cw-S.w0,3)+'  ( '+((cw-S.w0)/S.gam).toFixed(2)+' γ )');
+  set('r_e1',o.e1.toPrecision(6)); set('r_e2',sci(o.e2,5));
+  set('r_n',o.n.toPrecision(6)); set('r_k',sci(o.k,5));
+  set('r_a',sci(o.al/100,4)+' cm⁻¹');
+  set('r_ad',o.al>0?lenStr(1/o.al):'∞');
+  set('r_R1',pct(o.R1)); set('r_R',pct(o.R)); set('r_A',pct(o.A)); set('r_T',pct(o.T));
+  document.getElementById('modeHint').textContent=S.approx?'공명 근사식 (2.20 / 2.21)':'정확식 (2.15 / 2.16)';
+  document.getElementById('thickHint').textContent='두께 d = '+lenStr(S.d)+' , 간섭 무시 (다중반사 포함)';
+  updDerived();
+}
+function updDerived(){
+  const st=S.einf+S.deps, lo=S.w0*Math.sqrt(st/S.einf);
+  document.getElementById('derived').innerHTML=
+    ['ε_st = '+st.toPrecision(4),
+     'ω_LO = '+sci(lo,4),
+     'γ/ω₀ = '+sci(S.gam/S.w0,3),
+     'λ₀ = '+lenStr(2*Math.PI*C/S.w0),
+     'ħω₀ = '+(HBAR*S.w0/EV<0.1?(HBAR*S.w0/EV*1000).toPrecision(3)+' meV':(HBAR*S.w0/EV).toPrecision(3)+' eV')]
+    .map(t=>'<span class="tag">'+t+'</span>').join('');
+}
+
+/* ── 컨트롤 ───────────────────────────────────────────────────────── */
+const CTLS=[
+ {k:'w0',  lab:'ω₀ <b>공명 진동수</b>',   min:1e12, max:1e16, log:true,  unit:'rad/s'},
+ {k:'gam', lab:'γ <b>감쇠율</b> (= 선폭)', min:1e6,  max:1e15, log:true,  unit:'s⁻¹'},
+ {k:'deps',lab:'ε_st − ε_∞ <b>진동자 세기</b>', min:1e-12, max:200, log:true, unit:''},
+ {k:'einf',lab:'ε_∞ <b>배경 유전율</b>',  min:1,    max:16,   log:false, unit:''},
+ {k:'d',   lab:'d <b>시료 두께</b>',      min:1e-9, max:1e-2, log:true,  unit:'m'},
+ {k:'span',lab:'보기 폭 <b>±N γ</b>',     min:1,    max:3000, log:true,  unit:'γ'}
+];
+function toSlider(c,v){
+  return c.log ? 1000*(Math.log10(v)-Math.log10(c.min))/(Math.log10(c.max)-Math.log10(c.min))
+               : 1000*(v-c.min)/(c.max-c.min);
+}
+function fromSlider(c,s){
+  return c.log ? Math.pow(10, Math.log10(c.min)+(s/1000)*(Math.log10(c.max)-Math.log10(c.min)))
+               : c.min+(s/1000)*(c.max-c.min);
+}
+function buildControls(){
+  const host=document.getElementById('controls');
+  host.innerHTML=CTLS.map(c=>
+    '<div class="ctl"><div class="ctl-top"><label for="r_'+c.k+'">'+c.lab+
+    (c.unit?' <span style="color:var(--muted)">['+c.unit+']</span>':'')+'</label>'+
+    '<input class="num" id="t_'+c.k+'" inputmode="decimal" aria-label="'+c.k+' 값"></div>'+
+    '<input type="range" id="r_'+c.k+'" min="0" max="1000" step="0.5" aria-label="'+c.k+' 슬라이더"></div>'
+  ).join('')+
+  '<div class="derived" id="derived"></div>'+
+  '<div class="toggles">'+
+    '<label class="tog"><input type="checkbox" id="cb_ap"><span>공명 근사식(2.20/2.21)으로 계산 — 정확식과 비교해 보기</span></label>'+
+    '<label class="tog"><input type="checkbox" id="cb_cmp"><span>n 패널에 √ε₁, κ 패널에 ε₂/2n 비교선 겹쳐 그리기</span></label>'+
+  '</div>';
+  for(const c of CTLS){
+    const r=document.getElementById('r_'+c.k), t=document.getElementById('t_'+c.k);
+    // 일부 브라우저는 슬라이더 위에서 휠을 굴리면 값이 바뀐다 — 페이지를 스크롤하다 값이 흐트러지는 것을 막는다
+    let wheelAt=0;
+    r.addEventListener('wheel',()=>{ wheelAt=performance.now(); },{passive:true});
+    r.addEventListener('input',()=>{
+      if(performance.now()-wheelAt<150){ r.value=toSlider(c,S[c.k]); return; }
+      S[c.k]=fromSlider(c,+r.value); syncText(c); markCustom(); pushHash(); render();
+    });
+    t.addEventListener('change',()=>{
+      const v=parseFloat(t.value.replace(/[^0-9eE.+\-]/g,''));
+      if(isFinite(v)&&v>0||(c.k==='einf'&&isFinite(v))){
+        S[c.k]=Math.min(c.max,Math.max(c.min,v)); syncAll(); pushHash(); render();
+      } else syncText(c);
+    });
+  }
+  document.getElementById('cb_ap').addEventListener('change',e=>{S.approx=e.target.checked; pushHash(); render();});
+  document.getElementById('cb_cmp').addEventListener('change',e=>{S.compare=e.target.checked; pushHash(); render();});
+}
+function boxVal(c){
+  return (c.k==='einf'||c.k==='span') ? (+S[c.k]).toPrecision(3) : S[c.k].toExponential(3);
+}
+function syncText(c){ document.getElementById('t_'+c.k).value=boxVal(c); }
+function syncAll(){
+  for(const c of CTLS){
+    document.getElementById('r_'+c.k).value=Math.min(1000,Math.max(0,toSlider(c,S[c.k])));
+    document.getElementById('t_'+c.k).value=boxVal(c);
+  }
+  document.getElementById('cb_ap').checked=S.approx;
+  document.getElementById('cb_cmp').checked=S.compare;
+}
+
+/* ── 프리셋 ───────────────────────────────────────────────────────── */
+function buildPresets(){
+  const host=document.getElementById('presets');
+  host.innerHTML=PRESETS.map(p=>'<button class="chip" data-k="'+p.k+'" aria-pressed="false">'+p.n+'</button>').join('');
+  host.addEventListener('click',e=>{
+    const b=e.target.closest('.chip'); if(!b) return;
+    applyPreset(b.dataset.k,true);
+  });
+}
+function applyPreset(k,resetCursor){
+  const p=PRESETS.find(x=>x.k===k); if(!p) return;
+  Object.assign(S,p.s);
+  if(resetCursor) S.cursor=null;
+  document.querySelectorAll('#presets .chip').forEach(c=>c.setAttribute('aria-pressed',String(c.dataset.k===k)));
+  document.getElementById('presetNote').textContent=p.note;
+  syncAll(); pushHash(); render();
+}
+function markCustom(){
+  document.querySelectorAll('#presets .chip').forEach(c=>c.setAttribute('aria-pressed','false'));
+}
+
+/* ── 커서 상호작용 ────────────────────────────────────────────────── */
+function bindCursor(cv){
+  const move=e=>{
+    const r=cv.getBoundingClientRect();
+    const x=(e.touches?e.touches[0].clientX:e.clientX)-r.left;
+    const g=geom(r.width,r.height,true), xr=range();
+    const t=Math.min(1,Math.max(0,(x-g.L)/g.plotW));
+    S.cursor=xr[0]+t*(xr[1]-xr[0]); render();
+  };
+  cv.addEventListener('pointerdown',e=>{cv.setPointerCapture(e.pointerId); move(e);});
+  cv.addEventListener('pointermove',e=>{ if(e.buttons||e.pointerType==='mouse') move(e); });
+  cv.tabIndex=0;
+  cv.addEventListener('keydown',e=>{
+    const xr=range(), step=(xr[1]-xr[0])/120;
+    if(e.key==='ArrowRight'){S.cursor=Math.min(xr[1],(S.cursor??S.w0)+step); e.preventDefault(); render();}
+    if(e.key==='ArrowLeft'){S.cursor=Math.max(xr[0],(S.cursor??S.w0)-step); e.preventDefault(); render();}
+  });
+}
+
+/* ── 해시 ─────────────────────────────────────────────────────────── */
+function pushHash(){
+  const q=['w0='+S.w0.toExponential(4),'g='+S.gam.toExponential(4),'de='+S.deps.toExponential(4),
+           'ei='+S.einf.toPrecision(4),'d='+S.d.toExponential(3),'sp='+S.span.toPrecision(4),
+           'ap='+(S.approx?1:0),'cp='+(S.compare?1:0)].join('&');
+  try{ history.replaceState(null,'','#'+q); }catch(_){}
+}
+function readHash(){
+  const h=(location.hash||'').replace(/^#/,''); if(!h) return false;
+  const m={}; h.split('&').forEach(p=>{const [a,b]=p.split('='); m[a]=b;});
+  const num=(v,d)=>{const x=parseFloat(v); return isFinite(x)?x:d;};
+  if(m.w0===undefined) return false;
+  S.w0=num(m.w0,S.w0); S.gam=num(m.g,S.gam); S.deps=num(m.de,S.deps);
+  S.einf=num(m.ei,S.einf); S.d=num(m.d,S.d); S.span=num(m.sp,S.span);
+  S.approx=m.ap==='1'; S.compare=m.cp==='1';
+  return true;
+}
+
+/* ── 시작 ─────────────────────────────────────────────────────────── */
+buildPresets(); buildControls();
+['c_e1','c_e2','c_n','c_k','c_rta'].forEach(id=>bindCursor(document.getElementById(id)));
+document.getElementById('copyBtn').addEventListener('click',async e=>{
+  const url=location.href;
+  try{ await navigator.clipboard.writeText(url); e.target.textContent='복사됨 ✓';
+       setTimeout(()=>e.target.textContent='링크 복사',1600); }
+  catch(_){ e.target.textContent='주소창의 URL을 복사하세요'; }
+});
+if(readHash()){ syncAll(); document.getElementById('presetNote').textContent='공유된 설정을 불러왔습니다.'; render(); }
+else applyPreset('fox',true);
+
+new ResizeObserver(()=>render()).observe(document.querySelector('.stage'));
+window.matchMedia('(prefers-color-scheme:dark)').addEventListener('change',render);
+new MutationObserver(render).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+})();
+</script>

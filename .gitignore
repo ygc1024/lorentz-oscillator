@@ -1,0 +1,7 @@
+_versions/
+reports/
+node_modules/
+dist/
+.env
+Thumbs.db
+desktop.ini
