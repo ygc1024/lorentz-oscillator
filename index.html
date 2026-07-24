@@ -340,7 +340,7 @@ footer{
           </div>
         </div>
         <div class="pan" style="display:flex; flex-direction:column">
-          <svg id="beam" viewBox="0 0 300 210" preserveAspectRatio="xMidYMid meet" aria-label="커서 진동수에서의 빛 경로 도식"></svg>
+          <svg id="beam" viewBox="0 0 300 214" preserveAspectRatio="xMidYMid meet" aria-label="커서 진동수에서의 빛 경로 도식"></svg>
         </div>
       </div>
     </div>
@@ -780,36 +780,42 @@ function isDark(){
 function detuneMode(){ const xr=range(); return !S.two && (xr[1]-xr[0]) < 0.1*S.w0; }
 
 /* ── 빔 도식 ──────────────────────────────────────────────────────── */
+/* 빔 도식 — 세 값 모두 "세로 높이 = 에너지 비율" 하나의 척도로 그린다.
+   시료 안에서는 들어간 빔(높이 1−R)이 나가는 빔(높이 T)으로 얇아지고,
+   그 차이(= A)가 위아래 쐐기로 남는다. */
 function drawBeam(o){
   const svg=document.getElementById('beam');
-  const H=34, x0=10, xf=124, xb=176, x1=290, cy=104, yR=cy-H/2-30;
-  const hR=Math.max(1,H*o.R), hT=Math.max(1,H*o.T), wA=Math.max(0,46*Math.sqrt(o.A));
+  const H=40, x0=10, xf=116, xb=184, x1=290, cy=100, yR=cy-H/2-32;
+  const hR=Math.max(0.8,H*o.R), hT=Math.max(0.8,H*o.T), hIn=Math.max(0,H*(1-o.R));
   const s1=css('--s1'), s2=css('--s2'), s3=css('--s3'), ink=css('--ink2'), mut=css('--muted');
   const F='font-family="system-ui,Malgun Gothic,sans-serif"';
-  const slabFill=isDark()?'rgba(219,108,66,'+(0.05+0.38*o.A)+')':'rgba(193,70,31,'+(0.04+0.30*o.A)+')';
+  const slabFill=isDark()?'rgba(219,108,66,'+(0.05+0.30*o.A)+')':'rgba(193,70,31,'+(0.04+0.24*o.A)+')';
   const g=[];
   // 시료
-  g.push('<rect x="'+xf+'" y="34" width="'+(xb-xf)+'" height="132" rx="2" fill="'+slabFill+'" stroke="'+css('--rule')+'"/>');
-  g.push('<text x="'+((xf+xb)/2)+'" y="28" font-size="9.5" fill="'+mut+'" '+F+' text-anchor="middle">시료</text>');
+  g.push('<rect x="'+xf+'" y="30" width="'+(xb-xf)+'" height="140" rx="2" fill="'+slabFill+'" stroke="'+css('--rule')+'"/>');
+  g.push('<text x="'+((xf+xb)/2)+'" y="24" font-size="9.5" fill="'+mut+'" '+F+' text-anchor="middle">시료 d = '+lenStr(S.d)+'</text>');
   // 입사
   g.push('<rect x="'+x0+'" y="'+(cy-H/2)+'" width="'+(xf-x0)+'" height="'+H+'" fill="'+ink+'" opacity=".2"/>');
-  g.push('<path d="M '+(xf-14)+' '+(cy-H/2)+' l 0 '+H+' l 13 '+(-H/2)+' Z" fill="'+ink+'" opacity=".45"/>');
-  g.push('<text x="'+(x0+2)+'" y="'+(cy+H/2+13)+'" font-size="10" fill="'+ink+'" '+F+'>입사 100 %</text>');
+  g.push('<text x="'+(x0+2)+'" y="'+(cy+H/2+14)+'" font-size="10" fill="'+ink+'" '+F+'>입사 100 %</text>');
   // 반사
-  g.push('<path d="M '+xf+' '+(cy-H/2)+' L '+(xf-26)+' '+(yR+hR)+' L '+x0+' '+(yR+hR)+' L '+x0+' '+yR+' L '+(xf-26)+' '+yR+' Z" fill="'+s1+'" opacity=".9"/>');
+  g.push('<path d="M '+xf+' '+(cy-H/2)+' L '+(xf-28)+' '+(yR+hR)+' L '+x0+' '+(yR+hR)+' L '+x0+' '+yR+' L '+(xf-28)+' '+yR+' Z" fill="'+s1+'" opacity=".9"/>');
   g.push('<path d="M '+(x0+14)+' '+yR+' l 0 '+hR+' l -13 '+(-hR/2)+' Z" fill="'+s1+'"/>');
   g.push('<text x="'+x0+'" y="'+(yR-7)+'" font-size="10.5" fill="'+s1+'" '+F+' font-weight="600">반사 '+pct(o.R)+'</text>');
+  // 시료 안 — 들어간 빔이 얇아지고, 남은 쐐기가 흡수
+  if(hIn>0.4){
+    g.push('<path d="M '+xf+' '+(cy-hIn/2)+' L '+xb+' '+(cy-hT/2)+' L '+xb+' '+(cy+hT/2)+' L '+xf+' '+(cy+hIn/2)+' Z" fill="'+s2+'" opacity=".85"/>');
+    g.push('<rect x="'+xf+'" y="'+(cy-hT/2)+'" width="'+(xb-xf)+'" height="'+hT+'" fill="'+s3+'" opacity=".92"/>');
+  }
   // 투과
   g.push('<rect x="'+xb+'" y="'+(cy-hT/2)+'" width="'+(x1-xb-12)+'" height="'+hT+'" fill="'+s3+'" opacity=".92"/>');
-  g.push('<path d="M '+(x1-13)+' '+(cy-hT/2-3)+' l 0 '+(hT+6)+' l 13 '+(-hT/2-3)+' Z" fill="'+s3+'"/>');
+  const pad=Math.min(3,hT/2);   // 투과가 0에 가까우면 화살촉도 같이 사라져야 한다
+  g.push('<path d="M '+(x1-13)+' '+(cy-hT/2-pad)+' l 0 '+(hT+2*pad)+' l 13 '+(-hT/2-pad)+' Z" fill="'+s3+'"/>');
   g.push('<text x="'+x1+'" y="'+(cy-Math.max(hT/2,7)-8)+'" font-size="10.5" fill="'+s3+'" '+F+' font-weight="600" text-anchor="end">투과 '+pct(o.T)+'</text>');
-  // 흡수 (열로 빠져나감)
-  if(wA>1){
-    const cx=(xf+xb)/2;
-    g.push('<path d="M '+(cx-wA/2)+' '+(cy+H/2-2)+' L '+(cx+wA/2)+' '+(cy+H/2-2)+' L '+(cx+wA/6)+' 162 L '+(cx-wA/6)+' 162 Z" fill="'+s2+'" opacity=".85"/>');
-  }
-  g.push('<text x="'+((xf+xb)/2)+'" y="180" font-size="10.5" fill="'+s2+'" '+F+' font-weight="600" text-anchor="middle">흡수 '+pct(o.A)+'</text>');
-  g.push('<text x="150" y="199" font-size="9.5" fill="'+mut+'" '+F+' text-anchor="middle">n = '+o.n.toPrecision(4)+' ,  κ = '+sci(o.k,3)+' ,  αd = '+sci(o.al*S.d,3)+'</text>');
+  // 흡수 — 쐐기에서 아래로 잇는 지시선
+  const cx=(xf+xb)/2, yWedge=cy+ (hIn+hT)/4;
+  g.push('<path d="M '+cx+' '+Math.min(yWedge+2,168)+' L '+cx+' 178" stroke="'+s2+'" stroke-width="1" opacity=".7" fill="none"/>');
+  g.push('<text x="'+cx+'" y="190" font-size="10.5" fill="'+s2+'" '+F+' font-weight="600" text-anchor="middle">흡수 '+pct(o.A)+' — 열로</text>');
+  g.push('<text x="150" y="206" font-size="9.5" fill="'+mut+'" '+F+' text-anchor="middle">높이 = 에너지 비율 ·  n = '+o.n.toPrecision(4)+' , κ = '+sci(o.k,3)+' , αd = '+sci(o.al*S.d,3)+'</text>');
   svg.innerHTML=g.join('');
 }
 
@@ -1048,7 +1054,10 @@ function bindCursor(cv){
     const t=Math.min(1,Math.max(0,(x-g.L)/g.plotW));
     S.cursor=xr[0]+t*(xr[1]-xr[0]); render();
   };
-  cv.addEventListener('pointerdown',e=>{cv.setPointerCapture(e.pointerId); move(e);});
+  cv.addEventListener('pointerdown',e=>{
+    try{ cv.setPointerCapture(e.pointerId); }catch(_){}
+    move(e);
+  });
   cv.addEventListener('pointermove',e=>{ if(e.buttons||e.pointerType==='mouse') move(e); });
   cv.tabIndex=0;
   cv.addEventListener('keydown',e=>{
